@@ -1,0 +1,11 @@
+{
+  'image_size': [3, 32, 32],
+  'batch_size': 256,
+  'num_epochs': 20,
+  'val_every': 1,
+  # model hparams
+  'pool_size': 50,
+  'lr': 2.0e-4,
+  'betas': [0.5, 0.999],
+  'cyc': 10,
+}
