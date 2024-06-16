@@ -10,8 +10,8 @@ class PatchDiscriminator(nn.Module):
     def __init__(
         self,
         input_shape=(3, 32, 32),
-        hidden_dims=(64, 128, 256, 512),
-        max_pools=(2, 2, 2, 2),
+        hidden_dims=(64, 128, 256),
+        max_pools=(2, 2, 2),
         hparams=None
     ):
         super().__init__()
@@ -41,8 +41,8 @@ class Generator(nn.Module):
     def __init__(
         self,
         input_shape=(3, 32, 32),
-        hidden_dims=(64, 128, 256, 512),
-        max_pools=(2, 2, 2, 2),
+        hidden_dims=(64, 128, 128),
+        max_pools=(2, 2, 0),
         hparams=None
     ):
         super().__init__()
@@ -79,11 +79,8 @@ class CycleGAN(nn.Module):
 
         self.set_hparams(hparams)
 
-        self.fake_A_pool = ImagePool(hparams['pool_size'])
-        self.fake_B_pool = ImagePool(hparams['pool_size'])
-
         # loss functions
-        self.criter_gan = GANLoss('vanilla')
+        self.criter_gan = GANLoss('lsgan')
         self.criter_cyc = nn.L1Loss()
 
         # loss dict
@@ -157,13 +154,13 @@ class CycleGAN(nn.Module):
         return loss_D
 
     def backward_D_A(self, outputs):
-        fake_A = self.fake_A_pool.query(outputs['fake_BA'])
+        fake_A = outputs['fake_BA']
         l_D_A = self.backward_D(self.D_A, outputs['real_A'], fake_A)
         self.loss_dict['l_D_A'] = l_D_A
         return l_D_A
 
     def backward_D_B(self, outputs):
-        fake_B = self.fake_B_pool.query(outputs['fake_AB'])
+        fake_B = outputs['fake_AB']
         l_D_B = self.backward_D(self.D_B, outputs['real_B'], fake_B)
         self.loss_dict['l_D_B'] = l_D_B
         return l_D_B
@@ -197,14 +194,6 @@ class CycleGAN(nn.Module):
         # forward pass
         outputs = self.forward(x_A, x_B)
 
-        # update G_A and G_B
-        self.set_requires_grad([self.D_A, self.D_B], False)
-        loss_G = self.backward_G(outputs)
-        if backward:
-            self.optim_G.zero_grad()
-            loss_G.backward()
-            self.optim_G.step()
-
         # update D_A and D_B
         self.set_requires_grad([self.D_A, self.D_B], True)
         l_D_A = self.backward_D_A(outputs)
@@ -214,5 +203,13 @@ class CycleGAN(nn.Module):
             l_D_A.backward()
             l_D_B.backward()
             self.optim_D.step()
+
+        # update G_A and G_B
+        self.set_requires_grad([self.D_A, self.D_B], False)
+        loss_G = self.backward_G(outputs)
+        if backward:
+            self.optim_G.zero_grad()
+            loss_G.backward()
+            self.optim_G.step()
 
         return (outputs, self.loss_dict)
