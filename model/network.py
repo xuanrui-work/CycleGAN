@@ -1,5 +1,4 @@
 from .block import *
-from .image_pool import *
 from .loss import *
 
 import torch
