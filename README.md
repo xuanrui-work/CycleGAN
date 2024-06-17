@@ -16,3 +16,7 @@ Simply open the corresponding jupyter notebook with your favorite editor and run
 ```
 tensorboard --logdir=<dir-to-logs>
 ```
+
+### Results
+![alt](./docs/images/results-1.png)
+![alt](./docs/images/results-2.png)
