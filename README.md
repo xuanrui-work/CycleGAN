@@ -1,4 +1,4 @@
-# cycle-gan
+# CycleGAN
 
 This repository contains the pytorch implementation of the following papers:
 * [Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks](https://arxiv.org/abs/1703.10593)
